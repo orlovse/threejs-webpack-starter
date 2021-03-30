@@ -2,6 +2,9 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'dat.gui'
+import gsap from 'gsap'
+
+const textureLoader = new THREE.TextureLoader()
 
 // Debug
 const gui = new dat.GUI()
@@ -12,17 +15,27 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
-// Objects
-const geometry = new THREE.TorusGeometry( .7, .2, 16, 100 );
+const geometry = new THREE.PlaneBufferGeometry(1, 1.3)
 
-// Materials
+for(let i=0; i < 4; i++){
+    const material = new THREE.MeshBasicMaterial({
+        map: textureLoader.load(`/photo/${i}.JPG`)
+    })
 
-const material = new THREE.MeshBasicMaterial()
-material.color = new THREE.Color(0xff0000)
+    const img = new THREE.Mesh(geometry, material)
+    img.position.set(Math.random() + .3, -i*1.8)
 
-// Mesh
-const sphere = new THREE.Mesh(geometry,material)
-scene.add(sphere)
+    scene.add(img)
+}
+
+let objects = []
+
+scene.traverse((object) => {
+    if(object.isMesh){
+        objects.push(object)
+    }
+})
+
 
 // Lights
 
@@ -65,6 +78,8 @@ camera.position.y = 0
 camera.position.z = 2
 scene.add(camera)
 
+gui.add(camera.position, "y").min(-5).max(5).step(0.01)
+
 // Controls
 // const controls = new OrbitControls(camera, canvas)
 // controls.enableDamping = true
@@ -78,9 +93,27 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+
+// Mouse
+let y = 0;
+let position = 0;
+const onMouseWheel = (event) => {
+    y = event.deltaY*0.003
+}
+window.addEventListener("wheel", onMouseWheel)
+
+const mouse = new THREE.Vector2()
+
+window.addEventListener('mousemove', (event) => {
+    mouse.x = event.clientX / sizes.width * 2 - 1
+    mouse.y = -(event.clientY / sizes.height) * 2 + 1
+})
+
 /**
  * Animate
  */
+
+const raycaster = new THREE.Raycaster()
 
 const clock = new THREE.Clock()
 
@@ -90,7 +123,29 @@ const tick = () =>
     const elapsedTime = clock.getElapsedTime()
 
     // Update objects
-    sphere.rotation.y = .5 * elapsedTime
+    position += y
+    y *= .5
+
+
+    // Raycaster
+    raycaster.setFromCamera(mouse, camera)
+    const intersects = raycaster.intersectObjects(objects)
+
+    for(const intersect of intersects){
+        gsap.to(intersect.object.scale, {x: 1.7, y: 1.7})
+        gsap.to(intersect.object.rotation, {y: -0.5})
+        gsap.to(intersect.object.position, {z: -0.9})
+    }
+
+    for(const object of objects) {
+        if(!intersects.find(intersect => intersect.object === object)){
+            gsap.to(object.scale, {x: 1, y: 1})
+            gsap.to(object.rotation, {y: 0})
+            gsap.to(object.position, {z: 0})
+        }
+    }
+
+    camera.position.y = -position
 
     // Update Orbital Controls
     // controls.update()
