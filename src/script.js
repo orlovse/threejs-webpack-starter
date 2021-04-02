@@ -119,8 +119,8 @@ camera.position.z = 400;
 scene.add(camera);
 
 // Controls
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
+// const controls = new OrbitControls(camera, canvas);
+// controls.enableDamping = true;
 
 /**
  * Renderer
@@ -136,6 +136,12 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  * Animate
  */
 
+let y = 0;
+const onMouseWheel = (event) => {
+  y = event.deltaY * 0.003;
+};
+window.addEventListener("wheel", onMouseWheel);
+
 const clock = new THREE.Clock();
 
 const tick = () => {
@@ -145,11 +151,11 @@ const tick = () => {
   particle.rotation.y -= 0.0004;
   particle.rotation.z -= 0.0002;
 
-  circle.rotation.x -= 0.003;
-  circle.rotation.y -= 0.003;
+  //   circle.rotation.x -= 0.003;
+  circle.rotation.y = y / 2;
 
-  skelet.rotation.x -= 0.004;
-  skelet.rotation.y -= 0.004;
+  //   skelet.rotation.x -= 0.004;
+  skelet.rotation.y = -y / 10;
 
   // Update Orbital Controls
   // controls.update()
