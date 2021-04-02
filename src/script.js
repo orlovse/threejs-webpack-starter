@@ -151,10 +151,10 @@ const tick = () => {
   particle.rotation.y -= 0.0004;
   particle.rotation.z -= 0.0002;
 
-  //   circle.rotation.x -= 0.003;
+  circle.rotation.x = y / 2;
   circle.rotation.y = y / 2;
 
-  //   skelet.rotation.x -= 0.004;
+  skelet.rotation.x = -y / 10;
   skelet.rotation.y = -y / 10;
 
   // Update Orbital Controls
